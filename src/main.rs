@@ -8,6 +8,8 @@ use anyhow::Result;
 use chrono::{Utc, Duration};
 use simple_logger::{SimpleLogger};
 
+// TODO: replace logging library with macro for verbose outputting
+
 // Limit number of days to look back for new file
 const MAX_DL_DATE_LOOKBACKS: i64 = 3;
 
@@ -16,6 +18,10 @@ const MAX_DL_DATE_LOOKBACKS: i64 = 3;
 // this will learn properties file setup
 // TODO: add functionality to capture this file not existing
 const BASE_CSV: &str = "/home/vscode/.config/bgg/2021-10-01.csv";
+
+// TODO: old file purge
+
+
 
 fn download_csv (date_string: &str) -> Result<String, reqwest::Error> {
     let url = format!("https://gitlab.com/recommend.games/bgg-ranking-historicals/-/raw/master/{}.csv", &date_string);
@@ -47,47 +53,62 @@ fn main() -> Result<()>  {
     log::info!("Config path created: {:?}", config_path);
 
 
-    let mut file_date = Utc::now();
+    let mut today_date = Utc::now();
     
-    // check file existence 
-    // if not found DL, on fail, fail
-    // if found, check 3 days
-    // if none found, DL (update), on fail, warn
-    // if found load
     
     // assumes that a file will exist by default (accommodate where it's been deleted manually)
-
+    let mut recent_file: Option<String> = None;
 
     for i in 0..MAX_DL_DATE_LOOKBACKS-1 {
         // let file_date_string = file_date.format("%Y-%m-%d");
-        file_date = file_date - Duration::days(1);
+        let file_date = today_date - Duration::days(i);
         log::info!("iteration: {} date: {}", i, file_date.format("%Y-%m-%d"));
-        let file_name = config_path.join(file_date.format("%Y-%m-%d.csv").to_string());
+        let file_path = config_path.join(file_date.format("%Y-%m-%d.csv").to_string());
 
-        log::info!("Looking for file: {:?}", &file_name);
-        if std::path::Path::new(&file_name).exists() {
-            log::info!("File exists: {:?}", &file_name);
+        log::info!("Looking for file: {:?}", &file_path);
+        if std::path::Path::new(&file_path).exists() {
+            log::info!("Recent file found: {:?}", &file_path);
+            recent_file = Some(format!("{:?}", file_path));
+            break;
         }
     }
     
-    let _a = match download_csv(&file_date.format("%Y-%m-%d").to_string()) {
-        Ok(csv_string) => csv_string,
-        Err(e) => {
-            log::error!("{}", &e.to_string());
-            panic!("CSV not downloaded")
+//https://stackoverflow.com/questions/51141672/how-do-i-ignore-an-error-returned-from-a-rust-function-and-proceed-regardless
+    let mut csv_data: String;
+   
+    match recent_file {
+        Some(file_path) => {
+            csv_data = read_file(file_path.as_str())?;
         },
-    };
+        None => {
+            let date_string = &today_date.format("%Y-%m-%d").to_string();
+            if let Ok(csv_string) = download_csv(date_string) {
+                csv_data = csv_string;
+                // log::info!("STILL GOT DATE STRING: {:?}",format!("{}.csv", date_string));
+                let output_file = config_path.join(format!("{}.csv", date_string));
+                let mut out = std::fs::File::create(output_file)?;
+                io::copy(&mut csv_data, &mut out)?;
+                log::info!("{:?}", output_file);
 
-    // let resp = reqwest::blocking::get("https://gitlab.com/recommend.games/bgg-ranking-historicals/-/raw/master/2021-12-15.csv");
-    // let mut content = match resp {
-    //     Ok(content) => content,
-    //     Err(error) => {eprintln!("{:?}", error);
-    //                          }
-    // };
+            } else {
+                log::info!("Using old copy of file: {}", BASE_CSV);
+                csv_data = read_file(BASE_CSV)?;
+            };
+        },
+    }
+    
     
     // let mut out = std::fs::File::create("2021-12-16.csv")?;
     // io::copy(&mut resp, &mut out)?;
 
 
     Ok(())
+}
+
+fn read_file(file_name: &str) -> Result<String> {
+    if let Ok(csv_string) = std::fs::read_to_string(file_name) {
+        Ok(csv_string)
+    } else {
+        panic!("Unable to read: {}", file_name);
+    }
 }
