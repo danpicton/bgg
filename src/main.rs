@@ -3,7 +3,7 @@ extern crate reqwest;
 
 // use clap::{Arg, App, SubCommand};
 // use reqwest::Client;
-use std::{io::{copy, self}, fmt::Display};
+use std::{io::{copy, self, Write}, fmt::Display};
 use anyhow::Result;
 use chrono::{Utc, Duration};
 use simple_logger::{SimpleLogger};
@@ -87,8 +87,9 @@ fn main() -> Result<()>  {
                 // log::info!("STILL GOT DATE STRING: {:?}",format!("{}.csv", date_string));
                 let output_file = config_path.join(format!("{}.csv", date_string));
                 let mut out = std::fs::File::create(output_file)?;
-                io::copy(&mut csv_data, &mut out)?;
-                log::info!("{:?}", output_file);
+                // io::copy(&mut csv_data, &mut out)?;
+                write!(out, "{}", csv_data);
+
 
             } else {
                 log::info!("Using old copy of file: {}", BASE_CSV);
@@ -97,9 +98,6 @@ fn main() -> Result<()>  {
         },
     }
     
-    
-    // let mut out = std::fs::File::create("2021-12-16.csv")?;
-    // io::copy(&mut resp, &mut out)?;
 
 
     Ok(())
