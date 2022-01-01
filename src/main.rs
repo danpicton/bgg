@@ -59,7 +59,7 @@ fn main() -> Result<()>  {
     // assumes that a file will exist by default (accommodate where it's been deleted manually)
     let mut recent_file: Option<String> = None;
 
-    for i in 0..MAX_DL_DATE_LOOKBACKS-1 {
+    for i in 0..MAX_DL_DATE_LOOKBACKS {
         // let file_date_string = file_date.format("%Y-%m-%d");
         let file_date = today_date - Duration::days(i);
         log::info!("iteration: {} date: {}", i, file_date.format("%Y-%m-%d"));
@@ -68,7 +68,8 @@ fn main() -> Result<()>  {
         log::info!("Looking for file: {:?}", &file_path);
         if std::path::Path::new(&file_path).exists() {
             log::info!("Recent file found: {:?}", &file_path);
-            recent_file = Some(format!("{:?}", file_path));
+            // recent_file = Some(format!("{:?}", file_path));
+            recent_file = Some(file_path.into_os_string().into_string().unwrap());
             break;
         }
     }
@@ -97,7 +98,7 @@ fn main() -> Result<()>  {
             };
         },
     }
-    
+    println!("{}", csv_data);
 
 
     Ok(())
