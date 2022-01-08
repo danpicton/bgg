@@ -1,12 +1,20 @@
 extern crate clap;
 extern crate reqwest;
+extern crate serde;
+// extern crate csv;
+
+#[macro_use]
+extern crate serde_derive;
 
 // use clap::{Arg, App, SubCommand};
 // use reqwest::Client;
 use std::{io::{copy, self, Write}, fmt::Display};
 use anyhow::Result;
 use chrono::{Utc, Duration};
+
 use simple_logger::{SimpleLogger};
+
+
 
 // TODO: replace logging library with macro for verbose outputting
 
@@ -21,44 +29,69 @@ const BASE_CSV: &str = "/home/vscode/.config/bgg/2021-10-01.csv";
 
 // TODO: old file purge
 
-struct boardgame {
+#[derive(Debug,Deserialize)]
+struct BoardGame {
+    #[serde(rename = "ID")]
     id: u32,
+    #[serde(rename = "Name")]
     name: String,
+    #[serde(rename = "Year")]
     year: u16,
+    #[serde(rename = "Rank")]
     rank: u32,
-    average_score: u8,
-    bayes_average: u8,
+    #[serde(rename = "Average")]
+    average_score: f32,
+    #[serde(rename = "Bayes average")]
+    bayes_average: f32,
+    #[serde(rename = "Users rated")]
     users_rated: u32,
+    #[serde(rename = "URL")]
     bgg_url: String,
+    #[serde(rename = "Thumbnail")]
     thumbnail_url: String,
 }
 
-fn download_csv (date_string: &str) -> Result<csv::Reader<&[u8]>, reqwest::Error> {
-    let url = format!("https://gitlab.com/recommend.games/bgg-ranking-historicals/-/raw/master/{}.csv", &date_string);
-    log::info!("Attempting download: {}", &url);
-    let resp = reqwest::blocking::get(url)?.text()?;
-    
-    Ok(csv::Reader::from_reader(resp.as_bytes()))
-    // println!("{:?}", content);
-    // content
-}
 
-fn read_file(file_name: &str) -> Result<csv::Reader<std::fs::File>> {
+
+// fn download_csv (date_string: &str) -> Result<csv::Reader<&[u8]>, reqwest::Error> {
+//     let url = format!("https://gitlab.com/recommend.games/bgg-ranking-historicals/-/raw/master/{}.csv", &date_string);
+//     log::info!("Attempting download: {}", &url);
+//     let resp = reqwest::blocking::get(url)?.text()?;
+    
+//     Ok(csv::Reader::from_reader(resp.as_bytes()))
+//     // println!("{:?}", content);
+//     // content
+// }
+
+
+fn read_file(file_name: &str) -> Result<Vec<BoardGame>> {
     // if let Ok(csv_string) = std::fs::read_to_string(file_name) {
     //     Ok(csv_string)
     // } else {
     //     panic!("Unable to read: {}", file_name);
     // }
+    let mut boardgames = Vec::<BoardGame>::new();
     let csv_file = std::fs::File::open(file_name)?;
-    Ok(csv::Reader::from_reader(csv_file))
+    for result in csv::Reader::from_reader(csv_file).deserialize() {
+        let boardgame: BoardGame = result?;
+        boardgames.push(boardgame);
+    }
+
+    Ok(boardgames)
 }
+
+
 
 // impl Result<csv::Reader<&[u8]> {
 //     fn csv_iterator(&self) -> 
 // }
-fn parse_csv<D: serde::de::DeserializeOwned, R: io::Read>(rdr: R) -> csv::Result<Vec<D>> {
-    csv::Reader::from_reader(rdr).into_deserialize().collect()
-}
+// fn parse_csv<R: io::Read>(rdr: R) -> &[BoardGame] {
+//     for result in rdr.records() {
+//         let record: BoardGame = result?;
+//         println!("{:?}");
+        
+//     }
+// }
 
 // fn parse_csv<D: serde::de::DeserializeOwned, R: Result<dyn io::Read>>(rdr: R) -> csv::Result<Vec<D>> {
 //     if Ok(rdr) {csv::Reader::from_reader(rdr).into_deserialize().collect()} else  {panic!("blah")};
@@ -104,34 +137,37 @@ fn main() -> Result<()>  {
     }
     
 //https://stackoverflow.com/questions/51141672/how-do-i-ignore-an-error-returned-from-a-rust-function-and-proceed-regardless
-let mut csv_data: csv::Result<Vec<String>>;
+let mut boardgames: Vec<BoardGame> = Vec::<BoardGame>::new();
 // String
     match recent_file {
         Some(file_path) => {
-            if let Ok(rdr) = read_file(file_path.as_str()) {
-                csv_data = parse_csv(rdr);
+            println!("Processing: {:?}", file_path);
+            if let Ok(bgs) = read_file(file_path.as_str()) {
+                boardgames = bgs;
             }
             // let csv_data = parse_csv(read_file(file_path.as_str())?);
             // let csv_data = parse_csv(read_file(file_path.as_str())?.deserialize());
         },
         None => {
-            let date_string = &today_date.format("%Y-%m-%d").to_string();
-            if let Ok(csv_string) = download_csv(date_string) {
-                let csv_data = csv_string.deserialize();
-                // log::info!("STILL GOT DATE STRING: {:?}",format!("{}.csv", date_string));
-                let output_file = config_path.join(format!("{}.csv", date_string));
-                let mut out = std::fs::File::create(output_file)?;
-                // io::copy(&mut csv_data, &mut out)?;
-                write!(out, "{}", csv_data);
+            unimplemented!("");
+            // let date_string = &today_date.format("%Y-%m-%d").to_string();
+            // if let Ok(csv_string) = download_csv(date_string) {
+            //     let csv_data = parse_csv(csv_string);
+            //     // let csv_data = csv_string.deserialize();
+            //     // log::info!("STILL GOT DATE STRING: {:?}",format!("{}.csv", date_string));
+            //     let output_file = config_path.join(format!("{}.csv", date_string));
+            //     let mut out = std::fs::File::create(output_file)?;
+            //     // io::copy(&mut csv_data, &mut out)?;
+            //     write!(out, "{}", csv_data);
 
 
-            } else {
-                log::info!("Using old copy of file: {}", BASE_CSV);
-                csv_data = read_file(BASE_CSV)?;
-            };
+            // } else {
+            //     log::info!("Using old copy of file: {}", BASE_CSV);
+            //     csv_data = read_file(BASE_CSV)?;
+            // };
         },
     }
-    println!("{}", csv_data);
+    println!("{:?}", boardgames);
 
 
     Ok(())
