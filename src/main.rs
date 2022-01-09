@@ -29,7 +29,7 @@ const BASE_CSV: &str = "/home/vscode/.config/bgg/2021-10-01.csv";
 
 // TODO: old file purge
 
-#[derive(Debug,Deserialize)]
+#[derive(Debug,Deserialize,Serialize)]
 struct BoardGame {
     #[serde(rename = "ID")]
     id: u32,
@@ -53,15 +53,24 @@ struct BoardGame {
 
 
 
-// fn download_csv (date_string: &str) -> Result<csv::Reader<&[u8]>, reqwest::Error> {
-//     let url = format!("https://gitlab.com/recommend.games/bgg-ranking-historicals/-/raw/master/{}.csv", &date_string);
-//     log::info!("Attempting download: {}", &url);
-//     let resp = reqwest::blocking::get(url)?.text()?;
+fn download_csv (date_string: &str) -> Result<Vec<BoardGame>> {
+    let url = format!("https://gitlab.com/recommend.games/bgg-ranking-historicals/-/raw/master/{}.csv", &date_string);
+    log::info!("Attempting download: {}", &url);
+    let resp = reqwest::blocking::get(url)?.text()?;
     
-//     Ok(csv::Reader::from_reader(resp.as_bytes()))
-//     // println!("{:?}", content);
-//     // content
-// }
+    let mut boardgames = Vec::<BoardGame>::new();
+
+    for result in csv::Reader::from_reader(resp.as_bytes()).deserialize() {
+        let boardgame: BoardGame = result?;
+        boardgames.push(boardgame);
+    }
+
+    Ok(boardgames)
+
+    // Ok(csv::Reader::from_reader())
+    // println!("{:?}", content);
+    // content
+}
 
 
 fn read_file(file_name: &str) -> Result<Vec<BoardGame>> {
@@ -149,22 +158,26 @@ let mut boardgames: Vec<BoardGame> = Vec::<BoardGame>::new();
             // let csv_data = parse_csv(read_file(file_path.as_str())?.deserialize());
         },
         None => {
-            unimplemented!("");
-            // let date_string = &today_date.format("%Y-%m-%d").to_string();
-            // if let Ok(csv_string) = download_csv(date_string) {
-            //     let csv_data = parse_csv(csv_string);
-            //     // let csv_data = csv_string.deserialize();
-            //     // log::info!("STILL GOT DATE STRING: {:?}",format!("{}.csv", date_string));
-            //     let output_file = config_path.join(format!("{}.csv", date_string));
-            //     let mut out = std::fs::File::create(output_file)?;
-            //     // io::copy(&mut csv_data, &mut out)?;
-            //     write!(out, "{}", csv_data);
-
-
-            // } else {
-            //     log::info!("Using old copy of file: {}", BASE_CSV);
-            //     csv_data = read_file(BASE_CSV)?;
-            // };
+            // unimplemented!("");
+            let date_string = &today_date.format("%Y-%m-%d").to_string();
+            if let Ok(bgs) = download_csv(date_string) {
+                let boardgames = bgs;
+                // let csv_data = csv_string.deserialize();
+                // log::info!("STILL GOT DATE STRING: {:?}",format!("{}.csv", date_string));
+                let output_file = config_path.join(format!("{}.csv", date_string));
+                // let mut out = std::fs::File::create(output_file)?;
+                // io::copy(&mut csv_data, &mut out)?;
+                // write!(out, "{}", boardgames);
+                let mut wtr =csv::Writer::from_path(output_file)?;
+                // wtr.write_record(&["ID","Name","Year","Rank","Average","Bayes average","Users rated","URL","Thumbnail"])?;
+                for boardgame in boardgames {
+                    wtr.serialize(boardgame)?;
+                }
+                wtr.flush()?;
+            } else {
+                log::info!("Using old copy of file: {}", BASE_CSV);
+                boardgames = read_file(BASE_CSV)?;
+            };
         },
     }
     println!("{:?}", boardgames);
