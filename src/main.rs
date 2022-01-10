@@ -51,39 +51,42 @@ struct BoardGame {
     thumbnail_url: String,
 }
 
+fn boardgames_from_reader<T: io::Read>(mut rdr: csv::Reader<T>) -> Result<Vec<BoardGame>> {
+    let mut boardgames = Vec::<BoardGame>::new();
 
+    for result in rdr.deserialize() {
+        let boardgame: BoardGame = result?;
+        boardgames.push(boardgame);
+    }
+
+    Ok(boardgames)
+}
 
 fn download_csv (date_string: &str) -> Result<Vec<BoardGame>> {
     let url = format!("https://gitlab.com/recommend.games/bgg-ranking-historicals/-/raw/master/{}.csv", &date_string);
     log::info!("Attempting download: {}", &url);
     let resp = reqwest::blocking::get(url)?.text()?;
     
-    let mut boardgames = Vec::<BoardGame>::new();
-
-    for result in csv::Reader::from_reader(resp.as_bytes()).deserialize() {
-        let boardgame: BoardGame = result?;
-        boardgames.push(boardgame);
-    }
-
-    Ok(boardgames)
+    // TODO: Handle errors  here
+    Ok(boardgames_from_reader(csv::Reader::from_reader(resp.as_bytes()))?)
 
 }
 
 
 fn read_file(file_name: &str) -> Result<Vec<BoardGame>> {
-    // if let Ok(csv_string) = std::fs::read_to_string(file_name) {
-    //     Ok(csv_string)
-    // } else {
-    //     panic!("Unable to read: {}", file_name);
-    // }
-    let mut boardgames = Vec::<BoardGame>::new();
-    let csv_file = std::fs::File::open(file_name)?;
-    for result in csv::Reader::from_reader(csv_file).deserialize() {
-        let boardgame: BoardGame = result?;
-        boardgames.push(boardgame);
-    }
 
-    Ok(boardgames)
+    // let mut boardgames = Vec::<BoardGame>::new();
+    let csv_file = std::fs::File::open(file_name)?;
+
+    // TODO: Handle errors  here
+    Ok(boardgames_from_reader(csv::Reader::from_reader(csv_file))?)
+
+    // for result in csv::Reader::from_reader(csv_file).deserialize() {
+    //     let boardgame: BoardGame = result?;
+    //     boardgames.push(boardgame);
+    // }
+
+    // Ok(boardgames)
 }
 
 
@@ -163,7 +166,7 @@ let mut boardgames: Vec<BoardGame> = Vec::<BoardGame>::new();
             };
         },
     }
-    println!("{:?}", boardgames);
+    // println!("{:?}", boardgames);
 
 
     Ok(())
