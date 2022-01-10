@@ -67,9 +67,6 @@ fn download_csv (date_string: &str) -> Result<Vec<BoardGame>> {
 
     Ok(boardgames)
 
-    // Ok(csv::Reader::from_reader())
-    // println!("{:?}", content);
-    // content
 }
 
 
@@ -91,20 +88,6 @@ fn read_file(file_name: &str) -> Result<Vec<BoardGame>> {
 
 
 
-// impl Result<csv::Reader<&[u8]> {
-//     fn csv_iterator(&self) -> 
-// }
-// fn parse_csv<R: io::Read>(rdr: R) -> &[BoardGame] {
-//     for result in rdr.records() {
-//         let record: BoardGame = result?;
-//         println!("{:?}");
-        
-//     }
-// }
-
-// fn parse_csv<D: serde::de::DeserializeOwned, R: Result<dyn io::Read>>(rdr: R) -> csv::Result<Vec<D>> {
-//     if Ok(rdr) {csv::Reader::from_reader(rdr).into_deserialize().collect()} else  {panic!("blah")};
-// }
 
 fn main() -> Result<()>  {
     // Initialise UTC logger to obviate local time issue
