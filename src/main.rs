@@ -76,6 +76,16 @@ fn read_file(file_name: &str) -> Result<Vec<BoardGame>> {
     Ok(boardgames_from_reader(csv::Reader::from_reader(csv_file))?)
 }
 
+fn save_csv(boardgames: &Vec<BoardGame>, file_path: std::path::PathBuf) -> Result<bool> {
+    let mut wtr =csv::Writer::from_path(file_path)?;
+
+    for boardgame in boardgames {
+        wtr.serialize(boardgame)?;
+    }
+    wtr.flush()?;
+    Ok(true)
+}
+
 fn main() -> Result<()>  {
     // Initialise UTC logger to obviate local time issue
     SimpleLogger::new()
@@ -112,7 +122,7 @@ fn main() -> Result<()>  {
     }
     
 
-let mut boardgames: Vec<BoardGame> = Vec::<BoardGame>::new();
+    let mut boardgames: Vec<BoardGame> = Vec::<BoardGame>::new();
     match recent_file {
         Some(file_path) => {
             println!("Processing: {:?}", file_path);
@@ -123,23 +133,17 @@ let mut boardgames: Vec<BoardGame> = Vec::<BoardGame>::new();
         None => {
             let date_string = &today_date.format("%Y-%m-%d").to_string();
             if let Ok(bgs) = download_csv(date_string) {
-                let boardgames = bgs;
+                boardgames = bgs;
 
-                // TODO: create save CSV function
-                let output_file = config_path.join(format!("{}.csv", date_string));
-                let mut wtr =csv::Writer::from_path(output_file)?;
-    
-                for boardgame in boardgames {
-                    wtr.serialize(boardgame)?;
-                }
-                wtr.flush()?;
+                save_csv(&boardgames, config_path.join(format!("{}.csv", date_string)))?;
+
             } else {
                 log::info!("Using old copy of file: {}", BASE_CSV);
                 boardgames = read_file(BASE_CSV)?;
             };
         },
     }
-    
+
     println!("{:?}", boardgames);
 
 
