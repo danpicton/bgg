@@ -76,7 +76,7 @@ fn read_file(file_name: &str) -> Result<Vec<BoardGame>> {
     Ok(boardgames_from_reader(csv::Reader::from_reader(csv_file))?)
 }
 
-fn save_csv(boardgames: &Vec<BoardGame>, file_path: std::path::PathBuf) -> Result<bool> {
+fn save_csv(boardgames: &[BoardGame], file_path: std::path::PathBuf) -> Result<bool> {
     let mut wtr =csv::Writer::from_path(file_path)?;
 
     for boardgame in boardgames {
@@ -86,9 +86,9 @@ fn save_csv(boardgames: &Vec<BoardGame>, file_path: std::path::PathBuf) -> Resul
     Ok(true)
 }
 
-fn main() -> Result<()>  {
-    // Initialise UTC logger to obviate local time issue
-    SimpleLogger::new()
+fn load_data() -> Result<Vec<BoardGame>> {
+        // Initialise UTC logger to obviate local time issue
+       SimpleLogger::new()
         .with_utc_timestamps()
         .with_level(log::LevelFilter::Info)
         .init().unwrap();
@@ -144,9 +144,15 @@ fn main() -> Result<()>  {
         },
     }
 
-    println!("{:?}", boardgames);
+    // println!("{:?}", boardgames);
+
+    Ok(boardgames) 
+}
 
 
+fn main() -> Result<()>  {
+    let boardgame_data = load_data()?;
     Ok(())
+
 }
 
