@@ -122,7 +122,7 @@ fn load_data() -> Result<Vec<BoardGame>> {
     }
     
 
-    let mut boardgames: Vec<BoardGame> = Vec::<BoardGame>::new();
+    let mut boardgames= Vec::<BoardGame>::new();
     match recent_file {
         Some(file_path) => {
             println!("Processing: {:?}", file_path);
@@ -149,9 +149,34 @@ fn load_data() -> Result<Vec<BoardGame>> {
     Ok(boardgames) 
 }
 
+struct RankToGame<'a> {
+    rank: u32,
+    boardgame: &'a BoardGame,
+}
+
+// struct PrefixToGames {
+//     prefix: String
+// }
 
 fn main() -> Result<()>  {
-    let boardgame_data = load_data()?;
+
+    let mut autocomp = std::collections::HashMap::<&str, Vec<RankToGame>>::new();
+    let boardgame_data = &load_data()?;
+    for boardgame in boardgame_data {
+
+        dbg!(boardgame);
+        let current_rank_to_game:RankToGame;
+        // create prefix
+        let mut prefix=String::new();
+        // tokenise name, iterate - wait on this
+        for char in boardgame.name.chars() {
+            // dbg!(char);
+            prefix.push(char);
+            dbg!(&prefix);
+
+            autocomp.entry(&prefix).or_insert(current_rank_to_game);
+        }
+    }
     Ok(())
 
 }
