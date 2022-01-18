@@ -175,9 +175,9 @@ fn main() -> Result<()>  {
                                                     rank: boardgame.rank,
                                                     boardgame
                                                 };
-            let current_key = prefix.clone();
+            
             prefix.push(char);
-                                   
+            let current_key = prefix.clone();                       
             autocomp.entry(current_key).or_insert_with(Vec::new).push(current_rank_to_game);
         }
     }
