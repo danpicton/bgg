@@ -149,6 +149,7 @@ fn load_data() -> Result<Vec<BoardGame>> {
     Ok(boardgames) 
 }
 
+#[derive(Copy, Clone, Debug)]
 struct RankToGame<'a> {
     rank: u32,
     boardgame: &'a BoardGame,
@@ -160,23 +161,28 @@ struct RankToGame<'a> {
 
 fn main() -> Result<()>  {
 
-    let mut autocomp = std::collections::HashMap::<&str, Vec<RankToGame>>::new();
+    let mut autocomp = std::collections::HashMap::<String, Vec<RankToGame>>::new();
     let boardgame_data = &load_data()?;
     for boardgame in boardgame_data {
 
-        dbg!(boardgame);
-        let current_rank_to_game:RankToGame;
+        // dbg!(boardgame);
+        
         // create prefix
         let mut prefix=String::new();
         // tokenise name, iterate - wait on this
         for char in boardgame.name.chars() {
-            // dbg!(char);
+            let current_rank_to_game = RankToGame {
+                                                    rank: boardgame.rank,
+                                                    boardgame: &boardgame
+                                                };
+            let current_key = prefix.clone();
             prefix.push(char);
-            dbg!(&prefix);
-
-            autocomp.entry(&prefix).or_insert(current_rank_to_game);
+                                   
+            autocomp.entry(current_key).or_insert(Vec::new()).push(current_rank_to_game);
         }
     }
+    dbg!(autocomp.get("The"));
+
     Ok(())
 
 }
