@@ -173,12 +173,12 @@ fn main() -> Result<()>  {
         for char in boardgame.name.chars() {
             let current_rank_to_game = RankToGame {
                                                     rank: boardgame.rank,
-                                                    boardgame: &boardgame
+                                                    boardgame
                                                 };
             let current_key = prefix.clone();
             prefix.push(char);
                                    
-            autocomp.entry(current_key).or_insert(Vec::new()).push(current_rank_to_game);
+            autocomp.entry(current_key).or_insert_with(Vec::new).push(current_rank_to_game);
         }
     }
     dbg!(autocomp.get("The"));
