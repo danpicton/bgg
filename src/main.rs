@@ -166,22 +166,24 @@ fn main() -> Result<()>  {
     for boardgame in boardgame_data {
 
         // dbg!(boardgame);
-        
-        // create prefix
-        let mut prefix=String::new();
-        // tokenise name, iterate - wait on this
-        for char in boardgame.name.chars() {
-            let current_rank_to_game = RankToGame {
-                                                    rank: boardgame.rank,
-                                                    boardgame
-                                                };
-            
-            prefix.push(char);
-            let current_key = prefix.clone();                       
-            autocomp.entry(current_key).or_insert_with(Vec::new).push(current_rank_to_game);
-        }
+        let words: Vec<&str> = boardgame.name.split_ascii_whitespace().collect();
+
+        for word in words {        
+            let mut prefix=String::new();
+
+            for char in word.chars() {
+                let current_rank_to_game = RankToGame {
+                                                        rank: boardgame.rank,
+                                                        boardgame
+                                                    };
+                
+                prefix.push(char);
+                let current_key = prefix.clone();                       
+                autocomp.entry(current_key).or_insert_with(Vec::new).push(current_rank_to_game);
+            }
+        }   
     }
-    dbg!(autocomp.get("The"));
+    dbg!(autocomp.get("Port"));
 
     Ok(())
 
