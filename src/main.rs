@@ -164,9 +164,9 @@ fn main() -> Result<()>  {
     let mut autocomp = std::collections::HashMap::<String, Vec<RankToGame>>::new();
     let boardgame_data = &load_data()?;
     for boardgame in boardgame_data {
-
+        let boardgame_name = boardgame.name.clone().to_lowercase();
         // dbg!(boardgame);
-        let words: Vec<&str> = boardgame.name.split_ascii_whitespace().collect();
+        let words: Vec<&str> = boardgame_name.split_ascii_whitespace().collect();
 
         for word in words {        
             let mut prefix=String::new();
@@ -183,7 +183,10 @@ fn main() -> Result<()>  {
             }
         }   
     }
-    dbg!(autocomp.get("Port"));
+    dbg!(autocomp.get("port"));
+
+    // TODO: remove punctuation from autocomp keys
+    // TODO: allow for optional apostrophes in autocomp lookup - remove punctuation from lookup, but retain in entry text
 
     Ok(())
 
