@@ -1,4 +1,3 @@
-extern crate clap;
 extern crate reqwest;
 extern crate serde;
 
@@ -196,7 +195,7 @@ fn main() -> Result<()>  {
     let boardgame_data = load_data()?;
     let autocomp = build_search_map(&boardgame_data)?;
     dbg!(autocomp.get("port"));
-    
+
     Ok(())
 
 }
