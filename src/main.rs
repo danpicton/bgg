@@ -164,7 +164,13 @@ fn main() -> Result<()>  {
     let mut autocomp = std::collections::HashMap::<String, Vec<RankToGame>>::new();
     let boardgame_data = &load_data()?;
     for boardgame in boardgame_data {
-        let boardgame_name = boardgame.name.clone().to_lowercase();
+
+        let boardgame_name: String  = boardgame.name.clone()
+                                                    .to_lowercase()
+                                                    .chars()
+                                                    .filter(|c| c.is_alphanumeric() 
+                                                                    || c.is_ascii_whitespace())
+                                                    .collect();
         // dbg!(boardgame);
         let words: Vec<&str> = boardgame_name.split_ascii_whitespace().collect();
 
@@ -176,7 +182,7 @@ fn main() -> Result<()>  {
                                                         rank: boardgame.rank,
                                                         boardgame
                                                     };
-                
+                // dbg!(&prefix);
                 prefix.push(char);
                 let current_key = prefix.clone();                       
                 autocomp.entry(current_key).or_insert_with(Vec::new).push(current_rank_to_game);
