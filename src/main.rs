@@ -155,14 +155,8 @@ struct RankToGame<'a> {
     boardgame: &'a BoardGame,
 }
 
-// struct PrefixToGames {
-//     prefix: String
-// }
-
-fn main() -> Result<()>  {
-
+fn build_search_map(boardgame_data: &[BoardGame]) -> Result<std::collections::HashMap::<String, Vec<RankToGame>>> {
     let mut autocomp = std::collections::HashMap::<String, Vec<RankToGame>>::new();
-    let boardgame_data = &load_data()?;
     for boardgame in boardgame_data {
 
         let boardgame_name: String  = boardgame.name.clone()
@@ -189,11 +183,20 @@ fn main() -> Result<()>  {
             }
         }   
     }
-    dbg!(autocomp.get("port"));
+    // dbg!(autocomp.get("port"));
+    Ok(autocomp)
 
-    // TODO: remove punctuation from autocomp keys
+
+}
+
+fn main() -> Result<()>  {
+
+        // TODO: remove punctuation from autocomp keys
     // TODO: allow for optional apostrophes in autocomp lookup - remove punctuation from lookup, but retain in entry text
-
+    let boardgame_data = load_data()?;
+    let autocomp = build_search_map(&boardgame_data)?;
+    dbg!(autocomp.get("port"));
+    
     Ok(())
 
 }
