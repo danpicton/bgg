@@ -5,7 +5,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
-// use clap::{Arg, App, SubCommand};
+// TODO: Tidy up use statement/calls to external functions
 use std::io;
 use anyhow::Result;
 use chrono::{Utc, Duration};
@@ -157,7 +157,7 @@ struct RankToGame<'a> {
 fn build_search_map(boardgame_data: &[BoardGame]) -> Result<std::collections::HashMap::<String, Vec<RankToGame>>> {
     let mut autocomp = std::collections::HashMap::<String, Vec<RankToGame>>::new();
     for boardgame in boardgame_data {
-
+        // TODO: likely remove alphanumeric filter and use regex when parsing input string
         let boardgame_name: String  = boardgame.name.clone()
                                                     .to_lowercase()
                                                     .chars()
