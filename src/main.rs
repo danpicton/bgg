@@ -200,7 +200,10 @@ fn main() -> Result<()>  {
 
 	let mut siv = cursive::default();
 
-	siv.add_global_callback('q', |s| s.quit());
+	
+	siv.add_global_callback(cursive::event::Key::Esc, |s| s.quit());
+    siv.add_global_callback(cursive::event::Event::CtrlChar('q'), |s| s.quit());
+
 
 	siv.add_layer(TextView::new("Hello cursive! Press <q> to quit."));
 
