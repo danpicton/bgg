@@ -9,6 +9,7 @@ extern crate serde_derive;
 use std::io;
 use anyhow::Result;
 use chrono::{Utc, Duration};
+use cursive::views::TextView;
 
 use simple_logger::{SimpleLogger};
 
@@ -195,6 +196,15 @@ fn main() -> Result<()>  {
     let boardgame_data = load_data()?;
     let autocomp = build_search_map(&boardgame_data)?;
     dbg!(autocomp.get("port"));
+
+
+	let mut siv = cursive::default();
+
+	siv.add_global_callback('q', |s| s.quit());
+
+	siv.add_layer(TextView::new("Hello cursive! Press <q> to quit."));
+
+	siv.run();
 
     Ok(())
 
