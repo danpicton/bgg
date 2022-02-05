@@ -205,7 +205,7 @@ fn main() -> Result<()>  {
     siv.add_global_callback(cursive::event::Event::CtrlChar('q'), |s| s.quit());
 
 
-	siv.add_layer(TextView::new("Hello cursive! Press <q> to quit."));
+	siv.add_layer(TextView::new("Hello cursive! Press <esc> or <ctrl-q> to quit."));
 
 	siv.run();
 
