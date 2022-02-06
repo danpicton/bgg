@@ -203,6 +203,12 @@ fn main() -> Result<()>  {
     let autocomp = build_search_map(&boardgame_data)?;
     // dbg!(autocomp.get("port"));
 
+    let _game = Text::new(">:")
+                            .with_validator(required!("This field is required"))
+                            .with_suggester(&game_suggestor)
+                            .with_help_message("e.g. Music Store")
+                            .with_page_size(5)
+                            .prompt()?;
     Ok(())
 
 }
