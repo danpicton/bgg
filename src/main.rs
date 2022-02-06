@@ -17,6 +17,7 @@ use inquire::{
 };
 
 
+use serde::__private::de::StrDeserializer;
 use simple_logger::{SimpleLogger};
 
 // TODO: replace logging library with macro for verbose outputting
@@ -202,7 +203,8 @@ fn main() -> Result<()>  {
     let boardgame_data = load_data()?;
     let autocomp = build_search_map(&boardgame_data)?;
     // dbg!(autocomp.get("port"));
-
+    let sug = game_suggestor;
+    
     let _game = Text::new(">:")
                             .with_validator(required!("This field is required"))
                             .with_suggester(&game_suggestor)
@@ -215,15 +217,15 @@ fn main() -> Result<()>  {
 
 // Code adapted from example: https://github.com/mikaelmello/inquire/blob/main/examples/expense_tracker.rs
 // fn game_suggestor(input: &str) -> Result<Vec<String>, CustomUserError> {
-fn game_suggestor(input: &str) -> Result<Vec<String>> {
+fn game_suggestor(input: &str) -> Vec<String> {
     let input = input.to_lowercase();
 
-    Ok(get_game_list()
+    get_game_list()
         .iter()
         .filter(|p| p.to_lowercase().contains(&input))
         .take(5)
         .map(|p| String::from(*p))
-        .collect())
+        .collect()
 }
 
 fn get_game_list() -> &'static [&'static str] {
