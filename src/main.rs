@@ -7,9 +7,15 @@ extern crate serde_derive;
 
 // TODO: Tidy up use statement/calls to external functions
 use std::io;
+use std::fmt::{Display, Formatter};
 use anyhow::Result;
 use chrono::{Utc, Duration};
-use cursive::views::TextView;
+
+use inquire::{
+    error::{InquireResult},
+    required, CustomType, MultiSelect, Select, Text,
+};
+
 
 use simple_logger::{SimpleLogger};
 
@@ -195,21 +201,12 @@ fn main() -> Result<()>  {
     // TODO: allow for optional apostrophes in autocomp lookup - remove punctuation from lookup, but retain in entry text
     let boardgame_data = load_data()?;
     let autocomp = build_search_map(&boardgame_data)?;
-    dbg!(autocomp.get("port"));
+    // dbg!(autocomp.get("port"));
 
 
-	let mut siv = cursive::default();
-
-	
-	siv.add_global_callback(cursive::event::Key::Esc, |s| s.quit());
-    siv.add_global_callback(cursive::event::Event::CtrlChar('q'), |s| s.quit());
 
 
-	siv.add_layer(TextView::new("Hello cursive! Press <esc> or <ctrl-q> to quit."));
-
-	siv.run();
 
     Ok(())
 
 }
-
