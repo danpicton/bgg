@@ -203,10 +203,27 @@ fn main() -> Result<()>  {
     let autocomp = build_search_map(&boardgame_data)?;
     // dbg!(autocomp.get("port"));
 
-
-
-
-
     Ok(())
 
+}
+
+// Code adapted from example: https://github.com/mikaelmello/inquire/blob/main/examples/expense_tracker.rs
+// fn game_suggestor(input: &str) -> Result<Vec<String>, CustomUserError> {
+fn game_suggestor(input: &str) -> Result<Vec<String>> {
+    let input = input.to_lowercase();
+
+    Ok(get_game_list()
+        .iter()
+        .filter(|p| p.to_lowercase().contains(&input))
+        .take(5)
+        .map(|p| String::from(*p))
+        .collect())
+}
+
+fn get_game_list() -> &'static [&'static str] {
+    &[
+        "Castles of Burgundy",
+        "Carcassonne",
+        "That's Pretty Clever",
+    ]
 }
