@@ -7,17 +7,17 @@ extern crate serde_derive;
 
 // TODO: Tidy up use statement/calls to external functions
 use std::io;
-use std::fmt::{Display, Formatter};
+// use std::fmt::{Display, Formatter};
+use std::collections::HashMap;
 use anyhow::Result;
 use chrono::{Utc, Duration};
 
 use inquire::{
-    error::{InquireResult},
-    required, CustomType, MultiSelect, Select, Text,
+    // error::{InquireResult},
+    required, Text, //CustomType, MultiSelect, Select, 
 };
 
-
-use serde::__private::de::StrDeserializer;
+// use serde::__private::de::StrDeserializer;
 use simple_logger::{SimpleLogger};
 
 // TODO: replace logging library with macro for verbose outputting
