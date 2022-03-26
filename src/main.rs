@@ -18,6 +18,7 @@ use inquire::{
 };
 
 // use serde::__private::de::StrDeserializer;
+// use serde::__private::de::StrDeserializer;
 use simple_logger::{SimpleLogger};
 
 // TODO: replace logging library with macro for verbose outputting
@@ -55,6 +56,10 @@ struct BoardGame {
     thumbnail_url: String,
 }
 
+// for debugging
+fn _type_of<T>(_: &T) -> String {
+    std::any::type_name::<T>().to_string()
+}
 
 fn boardgames_from_reader<T: io::Read>(mut rdr: csv::Reader<T>) -> Result<Vec<BoardGame>> {
     let mut boardgames = Vec::<BoardGame>::new();
@@ -162,7 +167,7 @@ struct RankToGame<'a> {
     boardgame: &'a BoardGame,
 }
 
-fn build_search_map(boardgame_data: &[BoardGame]) -> Result<std::collections::HashMap::<String, Vec<RankToGame>>> {
+fn build_search_map<'a>(boardgame_data: &[BoardGame]) -> Result<std::collections::HashMap::<String, Vec<RankToGame>>> {
     let mut autocomp = std::collections::HashMap::<String, Vec<RankToGame>>::new();
     for boardgame in boardgame_data {
         // TODO: likely remove alphanumeric filter and use regex when parsing input string
@@ -207,7 +212,7 @@ fn main() -> Result<()>  {
     
     let _game = Text::new(">:")
                             .with_validator(required!("This field is required"))
-                            .with_suggester(&game_suggestor)
+                            .with_suggester(&|inp|game_suggestor(inp, autocomp.clone()))
                             .with_help_message("e.g. Music Store")
                             .with_page_size(5)
                             .prompt()?;
@@ -217,21 +222,26 @@ fn main() -> Result<()>  {
 
 // Code adapted from example: https://github.com/mikaelmello/inquire/blob/main/examples/expense_tracker.rs
 // fn game_suggestor(input: &str) -> Result<Vec<String>, CustomUserError> {
-fn game_suggestor(input: &str) -> Vec<String> {
+fn game_suggestor(input: &str, game_map: HashMap<String, Vec<RankToGame>>) -> Vec<String> {
     let input = input.to_lowercase();
 
-    get_game_list()
-        .iter()
-        .filter(|p| p.to_lowercase().contains(&input))
-        .take(5)
-        .map(|p| String::from(*p))
-        .collect()
+    // get_game_list()
+    //     .iter()
+    //     .filter(|p| p.to_lowercase().contains(&input))
+    //     .take(5)
+    //     .map(|p| String::from(*p))
+    //     .collect()
+    get_game_list(&input, game_map).iter().map(|p| String::from(*p)).collect()
 }
 
-fn get_game_list() -> &'static [&'static str] {
-    &[
-        "Castles of Burgundy",
-        "Carcassonne",
-        "That's Pretty Clever",
-    ]
+// fn get_game_list(input: &str, game_map: HashMap<String, Vec<RankToGame>>) -> &'static [&'static str] {
+fn get_game_list<'a>(input: &'a str, game_map: HashMap<String, Vec<RankToGame<'a>>>) -> Vec<&'a String> {
+    let mut ret = Vec::<&'a String>::new();
+
+    if let Some(ponk) = game_map.get(input).iter().next() {
+        for game in &**ponk
+            {ret.push(&game.boardgame.name);}
+        
+    }
+    ret
 }
