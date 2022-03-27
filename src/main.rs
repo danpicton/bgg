@@ -239,7 +239,9 @@ fn get_game_list<'a>(input: &'a str, game_map: HashMap<String, Vec<RankToGame<'a
     let mut ret = Vec::<&'a String>::new();
 
     if let Some(ponk) = game_map.get(input).iter().next() {
-        for game in &**ponk
+        let mut cp = (*ponk).clone();
+        cp.sort_unstable_by_key(|item|item.rank);
+        for game in cp
             {ret.push(&game.boardgame.name);}
         
     }
