@@ -7,19 +7,11 @@ extern crate serde_derive;
 
 // TODO: Tidy up use statement/calls to external functions
 use std::io;
-// use std::fmt::{Display, Formatter};
 use std::collections::HashMap;
 use anyhow::Result;
 use chrono::{Utc, Duration};
-
-use inquire::{
-    // error::{InquireResult},
-    required, Text, //CustomType, MultiSelect, Select, 
-};
-
-// use serde::__private::de::StrDeserializer;
-// use serde::__private::de::StrDeserializer;
-use simple_logger::{SimpleLogger};
+use inquire::{required, Text};
+use simple_logger::SimpleLogger;
 
 // TODO: replace logging library with macro for verbose outputting
 
@@ -131,8 +123,7 @@ fn load_data() -> Result<Vec<BoardGame>> {
             recent_file = Some(file_path.into_os_string().into_string().unwrap());
             break;
         }
-    }
-    
+    } 
 
     let mut boardgames= Vec::<BoardGame>::new();
     match recent_file {
@@ -156,8 +147,6 @@ fn load_data() -> Result<Vec<BoardGame>> {
         },
     }
 
-    // println!("{:?}", boardgames);
-
     Ok(boardgames) 
 }
 
@@ -177,7 +166,7 @@ fn build_search_map<'a>(boardgame_data: &[BoardGame]) -> Result<std::collections
                                                     .filter(|c| c.is_alphanumeric() 
                                                                     || c.is_ascii_whitespace())
                                                     .collect();
-        // dbg!(boardgame);
+
         let words: Vec<&str> = boardgame_name.split_ascii_whitespace().collect();
 
         for word in words {        
@@ -188,26 +177,23 @@ fn build_search_map<'a>(boardgame_data: &[BoardGame]) -> Result<std::collections
                                                         rank: boardgame.rank,
                                                         boardgame
                                                     };
-                // dbg!(&prefix);
+
                 prefix.push(char);
                 let current_key = prefix.clone();                       
                 autocomp.entry(current_key).or_insert_with(Vec::new).push(current_rank_to_game);
             }
         }   
     }
-    // dbg!(autocomp.get("port"));
+
     Ok(autocomp)
-
-
 }
 
 fn main() -> Result<()>  {
-
-        // TODO: remove punctuation from autocomp keys
+    // TODO: remove punctuation from autocomp keys
     // TODO: allow for optional apostrophes in autocomp lookup - remove punctuation from lookup, but retain in entry text
     let boardgame_data = load_data()?;
     let autocomp = build_search_map(&boardgame_data)?;
-    // dbg!(autocomp.get("port"));
+
     let sug = game_suggestor;
     
     let _game = Text::new(">:")
@@ -225,16 +211,9 @@ fn main() -> Result<()>  {
 fn game_suggestor(input: &str, game_map: HashMap<String, Vec<RankToGame>>) -> Vec<String> {
     let input = input.to_lowercase();
 
-    // get_game_list()
-    //     .iter()
-    //     .filter(|p| p.to_lowercase().contains(&input))
-    //     .take(5)
-    //     .map(|p| String::from(*p))
-    //     .collect()
     get_game_list(&input, game_map).iter().map(|p| String::from(*p)).collect()
 }
 
-// fn get_game_list(input: &str, game_map: HashMap<String, Vec<RankToGame>>) -> &'static [&'static str] {
 fn get_game_list<'a>(input: &'a str, game_map: HashMap<String, Vec<RankToGame<'a>>>) -> Vec<&'a String> {
     let mut ret = Vec::<&'a String>::new();
 
