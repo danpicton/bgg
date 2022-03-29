@@ -206,8 +206,6 @@ fn main() -> Result<()>  {
 
 }
 
-// Code adapted from example: https://github.com/mikaelmello/inquire/blob/main/examples/expense_tracker.rs
-// fn game_suggestor(input: &str) -> Result<Vec<String>, CustomUserError> {
 fn game_suggestor(input: &str, game_map: HashMap<String, Vec<RankToGame>>) -> Vec<String> {
     let input = input.to_lowercase();
 
