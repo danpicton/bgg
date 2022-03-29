@@ -196,10 +196,10 @@ fn main() -> Result<()>  {
 
     let sug = game_suggestor;
     
-    let _game = Text::new(">:")
+    let _game = Text::new(">")
                             .with_validator(required!("This field is required"))
                             .with_suggester(&|inp|game_suggestor(inp, autocomp.clone()))
-                            .with_help_message("e.g. Music Store")
+                            .with_help_message("Search for your game")
                             .with_page_size(5)
                             .prompt()?;
     Ok(())
