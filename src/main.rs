@@ -1,19 +1,14 @@
-extern crate reqwest;
-extern crate serde;
-
-
-#[macro_use]
-extern crate serde_derive;
-
-// TODO: Tidy up use statement/calls to external functions
 use std::io;
 use std::collections::HashMap;
+use std::fs::{File, create_dir_all};
+use std::path::Path;
 use anyhow::Result;
 use chrono::{Utc, Duration};
 use inquire::{required, Text};
-use simple_logger::SimpleLogger;
-
+use serde_derive::{Serialize, Deserialize};
+use reqwest::blocking;
 // TODO: replace logging library with macro for verbose outputting
+use simple_logger::SimpleLogger;
 
 // Limit number of days to look back for new file
 const MAX_DL_DATE_LOOKBACKS: i64 = 3;
@@ -68,14 +63,14 @@ fn boardgames_from_reader<T: io::Read>(mut rdr: csv::Reader<T>) -> Result<Vec<Bo
 fn download_csv (date_string: &str) -> Result<Vec<BoardGame>> {
     let url = format!("https://gitlab.com/recommend.games/bgg-ranking-historicals/-/raw/master/{}.csv", &date_string);
     log::info!("Attempting download: {}", &url);
-    let resp = reqwest::blocking::get(url)?.text()?;
+    let resp = blocking::get(url)?.text()?;
     
     Ok(boardgames_from_reader(csv::Reader::from_reader(resp.as_bytes()))?)
 }
 
 #[allow(clippy::needless_question_mark)]
 fn read_file(file_name: &str) -> Result<Vec<BoardGame>> {
-    let csv_file = std::fs::File::open(file_name)?;
+    let csv_file = File::open(file_name)?;
     
     Ok(boardgames_from_reader(csv::Reader::from_reader(csv_file))?)
 }
@@ -104,7 +99,7 @@ fn load_data() -> Result<Vec<BoardGame>> {
     };
 
     // Create path for bgg in config_path
-    std::fs::create_dir_all(&config_path)?;
+    create_dir_all(&config_path)?;
     log::info!("Config path created: {:?}", config_path);
 
     let today_date = Utc::now();
@@ -118,7 +113,7 @@ fn load_data() -> Result<Vec<BoardGame>> {
         let file_path = config_path.join(file_date.format("%Y-%m-%d.csv").to_string());
 
         log::info!("Looking for file: {:?}", &file_path);
-        if std::path::Path::new(&file_path).exists() {
+        if Path::new(&file_path).exists() {
             log::info!("Recent file found: {:?}", &file_path);
             recent_file = Some(file_path.into_os_string().into_string().unwrap());
             break;
@@ -156,8 +151,8 @@ struct RankToGame<'a> {
     boardgame: &'a BoardGame,
 }
 
-fn build_search_map<'a>(boardgame_data: &[BoardGame]) -> Result<std::collections::HashMap::<String, Vec<RankToGame>>> {
-    let mut autocomp = std::collections::HashMap::<String, Vec<RankToGame>>::new();
+fn build_search_map<'a>(boardgame_data: &[BoardGame]) -> Result<HashMap::<String, Vec<RankToGame>>> {
+    let mut autocomp = HashMap::<String, Vec<RankToGame>>::new();
     for boardgame in boardgame_data {
         // TODO: likely remove alphanumeric filter and use regex when parsing input string
         let boardgame_name: String  = boardgame.name.clone()
